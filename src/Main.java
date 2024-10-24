@@ -80,7 +80,7 @@ public class Main {
 
     public static int[] submenu(Scanner scanner) {
         int opcaoListaNumeros;
-        String caminhoDiretorio = "C:\\Users\\sjcgu\\OneDrive\\Desktop\\ApsOrdenacao\\src\\";
+        String caminhoDiretorio = System.getProperty("user.dir") + "\\src\\";
 
         System.out.println("Selecione a quantidade de números:");
         System.out.println("1 - 1.000");
