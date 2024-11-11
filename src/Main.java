@@ -2,15 +2,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        int opcaoSorteio;
-
+        int opcaoOrdencao;
         do {
             System.out.println("Selecione o tipo de algoritmo de ordenação:");
             System.out.println("1 - InsertionSort");
@@ -20,67 +18,64 @@ public class Main {
             System.out.print("Opção: ");
 
             try {
-                opcaoSorteio = scanner.nextInt();
-            } catch (InputMismatchException e) {
+                opcaoOrdencao = scanner.nextInt();
+            } catch (Exception e) {
                 System.out.println("Erro: Entrada inválida. Por favor, insira um número.");
                 scanner.next();
                 continue;
             }
 
-            if (opcaoSorteio == 4) {
+            if (opcaoOrdencao == 4) {
                 System.out.println("Saindo do programa...");
                 break;
             }
 
-            int[] array = submenu(scanner);
-
+            int[] array = menuNumeros(scanner);
             if (array == null) {
                 System.out.println("Erro ao ler o arquivo. Encerrando o programa...");
                 return;
             }
 
-            long startTime, endTime, duration;
-
-            if (opcaoSorteio == 1) {
-                System.out.println("Você escolheu a opção 1: InsertionSort");
-                startTime = System.nanoTime();
-                insertionSort(array);
-                endTime = System.nanoTime();
-                duration = endTime - startTime;
-                System.out.println("Array ordenado com InsertionSort: " + Arrays.toString(array));
-                System.out.println("Tempo levado: " + (duration / 1_000_000.0) + " ms");
-
-            } else if (opcaoSorteio == 2) {
-                System.out.println("Você escolheu a opção 2: BinaryInsertionSort");
-                startTime = System.nanoTime();
-                binaryInsertionSort(array, array.length);
-                endTime = System.nanoTime();
-                duration = endTime - startTime;
-                System.out.println("Array ordenado com BinaryInsertionSort: " + Arrays.toString(array));
-                System.out.println("Tempo levado: " + (duration / 1_000_000.0) + " ms");
-
-            } else if (opcaoSorteio == 3) {
-                System.out.println("Você escolheu a opção 3: MergeSort");
-                startTime = System.nanoTime();
-                mergeSort(array, 0, array.length - 1);
-                endTime = System.nanoTime();
-                duration = endTime - startTime;
-                System.out.println("Array ordenado com MergeSort: " + Arrays.toString(array));
-                System.out.println("Tempo levado: " + (duration / 1_000_000.0) + " ms");
-
-            } else {
-                System.out.println("Opção inválida! Tente novamente.");
+            int qtdAquencimentos = 10;
+            for (int i = 0; i < qtdAquencimentos; i++) {
+                int[] arrayAquecimento = Arrays.copyOf(array, array.length);
+                executarOrdenacaoComAquecimento(arrayAquecimento, opcaoOrdencao);
             }
 
-            System.out.println();
+            int[] arrayCopia = Arrays.copyOf(array, array.length);
+            long startTime = System.nanoTime();
+            executarOrdenacaoComAquecimento(arrayCopia, opcaoOrdencao);
+            long endTime = System.nanoTime();
+
+            double duration = (endTime - startTime) / 1_000_000.0;
+            System.out.println("Array ordenado: " + Arrays.toString(arrayCopia));
+            System.out.println("Tempo levado: " + duration + " ms\n");
         } while (true);
 
         scanner.close();
     }
 
-    public static int[] submenu(Scanner scanner) {
-        int opcaoListaNumeros;
-        String caminhoDiretorio = System.getProperty("user.dir") + "\\src\\";
+    public static void executarOrdenacaoComAquecimento(int[] array, int opcaoOrdencao) {
+        switch (opcaoOrdencao) {
+            case 1:
+                insertionSort(array);
+                break;
+            case 2:
+                binaryInsertionSort(array, array.length);
+                break;
+            case 3:
+                mergeSort(array, 0, array.length - 1);
+                break;
+            default:
+                System.out.println("Opção inválida! Tente novamente.");
+                break;
+        }
+    }
+
+    public static int[] menuNumeros(Scanner scanner) {
+        int opcaoQuantidadeNumeros;
+
+        String diretorio = System.getProperty("user.dir") + "\\src\\numeros\\";
 
         System.out.println("Selecione a quantidade de números:");
         System.out.println("1 - 1.000");
@@ -89,44 +84,40 @@ public class Main {
         System.out.print("Opção: ");
 
         try {
-            opcaoListaNumeros = scanner.nextInt();
-        } catch (InputMismatchException e) {
+            opcaoQuantidadeNumeros = scanner.nextInt();
+        } catch (Exception e) {
             System.out.println("Erro: Entrada inválida. Por favor, insira um número.");
             scanner.next();
             return null;
         }
 
         String arquivo;
-
-        if (opcaoListaNumeros == 1) {
-            arquivo = "1000_numbers.txt";
-        } else if (opcaoListaNumeros == 2) {
-            arquivo = "5000_numbers.txt";
-        } else if (opcaoListaNumeros == 3) {
-            arquivo = "10000_numbers.txt";
-        } else {
-            System.out.println("Opção inválida! Tente novamente.");
-            return null;
+        switch (opcaoQuantidadeNumeros) {
+            case 1:
+                arquivo = "1000_numbers.txt";
+                break;
+            case 2:
+                arquivo = "5000_numbers.txt";
+                break;
+            case 3:
+                arquivo = "10000_numbers.txt";
+                break;
+            default:
+                System.out.println("Opção inválida! Tente novamente.");
+                return null;
         }
 
-        return lerArquivo(caminhoDiretorio + arquivo);
+        return lerArquivo(diretorio + arquivo);
     }
 
     public static int[] lerArquivo(String nomeArquivo) {
         ArrayList<Integer> numeros = new ArrayList<>();
-
         try {
             File file = new File(nomeArquivo);
             Scanner fileScanner = new Scanner(file);
-
-            while (fileScanner.hasNext()) {
-                if (fileScanner.hasNextInt()) {
-                    numeros.add(fileScanner.nextInt());
-                } else {
-                    fileScanner.next();
-                }
+            while (fileScanner.hasNextInt()) {
+                numeros.add(fileScanner.nextInt());
             }
-
             fileScanner.close();
         } catch (FileNotFoundException e) {
             System.out.println("Erro: Arquivo " + nomeArquivo + " não encontrado.");
