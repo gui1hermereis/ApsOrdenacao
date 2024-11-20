@@ -8,8 +8,27 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        int opcaoOrdencao;
-        do {
+        while (true) {
+            int opcaoOrdencao = menuOrdenacao(scanner);
+            if (opcaoOrdencao == 4) {
+                System.out.println("Saindo do programa...");
+                break;
+            }
+
+            int[] array = carregarNumeros(scanner);
+            if (array == null) {
+                System.out.println("Erro ao ler o arquivo. Encerrando o programa...");
+                return;
+            }
+
+            resultadoOrdenado(array, opcaoOrdencao);
+        }
+
+        scanner.close();
+    }
+
+    public static int menuOrdenacao(Scanner scanner) {
+        while (true) {
             System.out.println("Selecione o tipo de algoritmo de ordenação:");
             System.out.println("1 - InsertionSort");
             System.out.println("2 - BinaryInsertionSort");
@@ -18,80 +37,44 @@ public class Main {
             System.out.print("Opção: ");
 
             try {
-                opcaoOrdencao = scanner.nextInt();
+                int opcao = scanner.nextInt();
+                if (opcao >= 1 && opcao <= 4) {
+                    return opcao;
+                }
+                System.out.println("Opção inválida! Tente novamente.");
             } catch (Exception e) {
                 System.out.println("Erro: Entrada inválida. Por favor, insira um número.");
                 scanner.next();
-                continue;
             }
-
-            if (opcaoOrdencao == 4) {
-                System.out.println("Saindo do programa...");
-                break;
-            }
-
-            int[] array = menuNumeros(scanner);
-            if (array == null) {
-                System.out.println("Erro ao ler o arquivo. Encerrando o programa...");
-                return;
-            }
-
-            int qtdAquencimentos = 10;
-            for (int i = 0; i < qtdAquencimentos; i++) {
-                int[] arrayAquecimento = Arrays.copyOf(array, array.length);
-                executarOrdenacaoComAquecimento(arrayAquecimento, opcaoOrdencao);
-            }
-
-            int[] arrayCopia = Arrays.copyOf(array, array.length);
-            long startTime = System.nanoTime();
-            executarOrdenacaoComAquecimento(arrayCopia, opcaoOrdencao);
-            long endTime = System.nanoTime();
-
-            double duration = (endTime - startTime) / 1_000_000.0;
-            System.out.println("Array ordenado: " + Arrays.toString(arrayCopia));
-            System.out.println("Tempo levado: " + duration + " ms\n");
-        } while (true);
-
-        scanner.close();
-    }
-
-    public static void executarOrdenacaoComAquecimento(int[] array, int opcaoOrdencao) {
-        switch (opcaoOrdencao) {
-            case 1:
-                insertionSort(array);
-                break;
-            case 2:
-                binaryInsertionSort(array, array.length);
-                break;
-            case 3:
-                mergeSort(array, 0, array.length - 1);
-                break;
-            default:
-                System.out.println("Opção inválida! Tente novamente.");
-                break;
         }
     }
 
-    public static int[] menuNumeros(Scanner scanner) {
-        int opcaoQuantidadeNumeros;
+    public static int menuNumeros(Scanner scanner) {
+        while (true) {
+            System.out.println("Selecione a quantidade de números:");
+            System.out.println("1 - 1.000");
+            System.out.println("2 - 5.000");
+            System.out.println("3 - 10.000");
+            System.out.print("Opção: ");
+            try {
+                int opcaoNumeros = scanner.nextInt();
+                if (opcaoNumeros >= 1 && opcaoNumeros <= 3) {
+                    return opcaoNumeros;
+                }
+                System.out.println("Opção inválida! Tente novamente.");
+            } catch (Exception e) {
+                System.out.println("Erro: Entrada inválida. Por favor, insira um número.");
+                scanner.next();
+            }
+        }
+    }
+
+    public static int[] carregarNumeros(Scanner scanner) {
+        int opcaoQuantidadeNumeros = menuNumeros(scanner);
 
         String diretorio = System.getProperty("user.dir") + "\\src\\numeros\\";
+        String arquivo = "";
 
-        System.out.println("Selecione a quantidade de números:");
-        System.out.println("1 - 1.000");
-        System.out.println("2 - 5.000");
-        System.out.println("3 - 10.000");
-        System.out.print("Opção: ");
-
-        try {
-            opcaoQuantidadeNumeros = scanner.nextInt();
-        } catch (Exception e) {
-            System.out.println("Erro: Entrada inválida. Por favor, insira um número.");
-            scanner.next();
-            return null;
-        }
-
-        String arquivo;
         switch (opcaoQuantidadeNumeros) {
             case 1:
                 arquivo = "1000_numbers.txt";
@@ -130,6 +113,50 @@ public class Main {
         }
 
         return array;
+    }
+
+    public static void executarOrdenacao(int[] array, int opcaoOrdencao) {
+        switch (opcaoOrdencao) {
+            case 1:
+                insertionSort(array);
+                break;
+            case 2:
+                binaryInsertionSort(array, array.length);
+                break;
+            case 3:
+                mergeSort(array, 0, array.length - 1);
+                break;
+            default:
+                System.out.println("Opção inválida! Tente novamente.");
+                break;
+        }
+    }
+
+    public static double calcularTempoMedio(int[] array, int opcaoOrdencao) {
+        long totalTime = 0;
+
+        for (int i = 0; i < 10; i++) {
+            int[] arrayCopia = Arrays.copyOf(array, array.length);
+            long startTime = System.nanoTime();
+            executarOrdenacao(arrayCopia, opcaoOrdencao);
+            long endTime = System.nanoTime();
+
+            totalTime += (endTime - startTime);
+        }
+
+        double tempoMedio = totalTime / 10.0;
+
+        return tempoMedio / 1_000_000.0;
+    }
+
+    public static void resultadoOrdenado(int[] array, int opcaoOrdencao) {
+        int[] arrayCopia = Arrays.copyOf(array, array.length);
+        executarOrdenacao(arrayCopia, opcaoOrdencao);
+
+        double tempoMedio = calcularTempoMedio(array, opcaoOrdencao);
+
+        System.out.println("Array ordenado: " + Arrays.toString(arrayCopia));
+        System.out.println("Tempo medio levado: " + tempoMedio + " ms\n");
     }
 
     public static void insertionSort(int[] array) {
